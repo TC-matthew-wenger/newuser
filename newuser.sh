@@ -12,8 +12,6 @@ sudo /System/Library/CoreServices/ManagedClient.app/Contents/Resources/createmob
 
 # Read input and determine if user should be local admin or not
 adminUser=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Should this user be local admin?" with title "New User Creation" with icon note buttons {"No", "Yes"}' -e 'button returned of result' 2>/dev/null)
-# read -p "Make this user a local admin? [Y/N]: " adminUser
-echo $adminUser
 if [[ "$adminUser" = "Yes" ]]
 then
     sudo dseditgroup -o edit -a $username -t user admin
