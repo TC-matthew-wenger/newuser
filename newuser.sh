@@ -1,18 +1,20 @@
 #!/bin/sh
 
 # Dialog box for new user creation
-fullname=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Please enter the new user first & last name or select Cancel." default answer "First Last"' -e 'text returned of result' 2>/dev/null)
-username=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Please enter the new user or select Cancel." default answer "first.last"' -e 'text returned of result' 2>/dev/null)
-
+fullname=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Enter full name" with title "New User Creation" with icon note default answer "First Last"' -e 'text returned of result' 2>/dev/null)
+username=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Create username" with title "New User Creation" with icon note default answer "first.last"' -e 'text returned of result' 2>/dev/null)
+secret=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Create password" with title "New User Creation" with icon note default answer "" with hidden answer' -e 'text returned of result' 2>/dev/null)
 # Create user account
-sudo sysadminctl interactive -addUser $username -fullName "$fullname" -password -
+sudo sysadminctl interactive -addUser $username -fullName "$fullname" -password $secret
 
 # Convert to Mobile account
-sudo /System/Library/CoreServices/ManagedClient.app/Contents/Resources/createmobileaccount -D -n $username
+sudo /System/Library/CoreServices/ManagedClient.app/Contents/Resources/createmobileaccount -D -n $username -p $secret
 
 # Read input and determine if user should be local admin or not
-read -p "Make this user a local admin? [Y/N]: " adminUser
-if [[ "$adminUser" =~ ^([yY][eE][sS]|[yY])$ ]]
+adminUser=$(/usr/bin/osascript -e 'Tell application "System Events" to display dialog "Should this user be local admin?" with title "New User Creation" with icon note buttons {"No", "Yes"}' -e 'button returned of result' 2>/dev/null)
+# read -p "Make this user a local admin? [Y/N]: " adminUser
+echo $adminUser
+if [[ "$adminUser" = "Yes" ]]
 then
     sudo dseditgroup -o edit -a $username -t user admin
 else
